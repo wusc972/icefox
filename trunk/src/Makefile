@@ -1,5 +1,5 @@
 CC= g++
-CFLAGS= -O2 -s -Wall -D__WIN32__  -mwindows 
+CFLAGS= -O2 -s -Wall -D__WIN32__  -mwindows -D_UNICODE -D_UNICODE_
 LDFLAGS= -I. -I./posixthread/include -L./posixthread/lib/x86 -lpthreadGC2 -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32 -lodbc32 -lWininet
 OBJS= cppthread.o dnscache.o httpconnection.o httpmessage.o httprequest.o httpresponse.o main.o httpserver.o httpsocket.o youconfig.o systemutil.o 
 

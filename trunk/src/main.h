@@ -11,6 +11,6 @@ BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam );
 void onTray(WPARAM wParam,LPARAM lParam);
 //icon
 void setIcon(bool disabled ,bool deL = false);
-/*void setTips(const wchar_t *tips);*/
+void setTips(const char *tips);
 
 static bool firstTimeToAdd = true;
