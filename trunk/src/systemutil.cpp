@@ -1,7 +1,7 @@
 #include "systemutil.h"
-#include <QString>
-#include <QtDebug>
-#include <QUdpSocket>
+
+#include "stdio.h"
+
 #include <wininet.h>
 #include <windows.h>
 
@@ -37,7 +37,7 @@ typedef struct {
 #define PROXY_TYPE_AUTO_DETECT                          0x00000008   // use autoproxy detection
 #define INTERNET_OPTION_PER_CONNECTION_OPTION   75
 
-BOOL SetConnectionProxy(const char * proxyAdressStr , char * connNameStr = NULL)
+BOOL SetConnectionProxy( char * proxyAdressStr , char * connNameStr = NULL)
 {
     INTERNET_PER_CONN_OPTION_LIST conn_options;
     BOOL    bReturn;
@@ -64,7 +64,7 @@ BOOL SetConnectionProxy(const char * proxyAdressStr , char * connNameStr = NULL)
     delete [] conn_options.pOptions;
 
     InternetSetOptionA(NULL, INTERNET_OPTION_SETTINGS_CHANGED, NULL, 0);
-    // InternetSetOption(NULL, INTERNET_OPTION_REFRESH , NULL, 0);
+    InternetSetOption(NULL, INTERNET_OPTION_REFRESH , NULL, 0);
     return bReturn;
 }
 
@@ -103,7 +103,7 @@ SystemUtil::SystemUtil()
 void SystemUtil::disableSystemProxy()
 {
     int ret = RemoveConnectionProxy();
-    qDebug() << "RemoveConnectionProxy result" << ret << GetLastError();
+    //qDebug() << "RemoveConnectionProxy result" << ret << GetLastError();
 }
 
 
@@ -111,9 +111,12 @@ void SystemUtil::enableSystemProxy()
 {
 }
 
-void SystemUtil::setSystemProxy(QString proxyServer, int proxyPort)
+void SystemUtil::setSystemProxy(const char* proxyServer, int proxyPort)
 {
-    QString proxy = proxyServer + ":" + QString::number(proxyPort);
-    int ret = SetConnectionProxy(proxy.toStdString().c_str());
-    qDebug() << "SetConnectionProxy result" << ret << GetLastError();
+  //QString proxy = proxyServer + ":" + QString::number(proxyPort);
+    char addr[100];
+    sprintf(addr,"%s:%d",proxyServer,proxyPort);
+
+    int ret = SetConnectionProxy(addr);
+    //qDebug() << "SetConnectionProxy result" << ret << GetLastError();
 }
