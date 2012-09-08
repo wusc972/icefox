@@ -45,7 +45,7 @@ L"YouProxy For Windows (Build 2)\n\
 \n\
 * 版本信息：20120908 (i386-mingw)\n \
 * 开发者：\n \
-    - Xiaoxia : YouProxy 核心 YoAgent , gdxxhg@gmail.com  \n \
+    - Xiaoxia : YouProxy 核心 YouAgent , gdxxhg@gmail.com  \n \
     - Alexbian : Windows 版本 UI , bhd.shu@gmail.com  \n \
       \n\
       \n\
