@@ -1,4 +1,5 @@
 
+#define _WIN32_IE 0x0500 
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,10 +23,7 @@
 #include <iostream>
 #include <ctime>
 
-#ifdef _WIN32_IE
-#undef _WIN32_IE
-#define _WIN32_IE 0x0600 
-#endif
+
 
 using namespace std;
 
@@ -41,12 +39,7 @@ L"YouProxy For Windows (Build 2)\n\
 \n\
 * YouProxy 是一款免费软件，欢迎所有人提供BUG信息及建议。\n\
 * 请访问 http://code.google.com/p/icefox/ 获取最新信息 。\n\
-\n\
-\n\
 * 版本信息：20120908 (i386-mingw)\n \
-* 开发者：\n \
-    - Xiaoxia : YouProxy 核心 YouAgent , gdxxhg@gmail.com  \n \
-    - Alexbian : Windows 版本 UI , bhd.shu@gmail.com  \n \
       \n\
       \n\
 * 使用方法：右键托盘菜单中，选择启用 YouProxy 。\n \
@@ -115,7 +108,7 @@ static BOOL InitWindow( HINSTANCE hInstance, int nCmdShow )
 	ShowWindow( wnd, SW_SHOW);
 	
 	setIcon(true);
-	
+	setTips("YouProxy is DISabled!");
 	return TRUE;
 }
 ///消息循环
@@ -163,12 +156,14 @@ BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 		  bAgentOn = true;
 		  //tray icon
 		  setIcon(false);
+setTips("YouProxy is ENabled!");
 		}
 	      else {
 		CheckMenuItem( menu, IDM_1, MF_BYCOMMAND | MF_UNCHECKED); 
 		ieSetter.disableSystemProxy();
 		bAgentOn = false;
 		setIcon(true);
+setTips("YouProxy is DISabled!");
 	      }
 	      break;
 	    }
@@ -271,7 +266,7 @@ void setIcon(bool disabled , bool deL )
 	tnid.uID = 0x1; //Resourcename
 	tnid.uFlags = NIF_MESSAGE |NIF_ICON | NIF_TIP; //
 	tnid.uCallbackMessage = TRAY_NOTIFY;//user message 
-	//tnid.szInfo = "";
+	
 	HICON iconnew;
 	if(!disabled)
 	  iconnew = LoadIcon(hinstance, MAKEINTRESOURCE(MAINAPP));
@@ -301,17 +296,21 @@ void setIcon(bool disabled , bool deL )
 	// free icon 
 	DestroyIcon(iconnew); 
 }
-/*
-void setTips(const wchar_t* tips)
+
+void setTips(const char* tips)
 {
 // set NOTIFYCONDATA structure	
-	NOTIFYICONDATA tnid;
+	NOTIFYICONDATA m_tnd;
 
-	tnid.cbSize = sizeof(NOTIFYICONDATA); 
-	tnid.hWnd = wnd; 
-	tnid.uID = 0x1; //Resourcename
-	tnid.uFlags = NIF_MESSAGE |NIF_ICON | NIF_TIP; //
-	tnid.uCallbackMessage = TRAY_NOTIFY;//user message
-
+	m_tnd.cbSize=sizeof(NOTIFYICONDATA);
+	m_tnd.uFlags = NIF_INFO;
+	m_tnd.uVersion = NOTIFYICON_VERSION;
+	m_tnd.uTimeout = 1000;
+	m_tnd.dwInfoFlags = NIIF_INFO;
+	wsprintf( m_tnd.szInfoTitle, "%s"," YouProxy " );
+	wsprintf( m_tnd.szInfo,"%s",      tips     );
+	//wcscpy_s( m_tnd.szTip,       _T("tip")       );
+	//SetTimer(1, 1000, NULL);
+	Shell_NotifyIcon( NIM_MODIFY, &m_tnd );
 }
-*/
+
