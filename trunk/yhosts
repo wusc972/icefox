@@ -4,7 +4,6 @@ googleusercontent.com       ip,203.208.46.170
 gstatic.com                 ip,203.208.46.175
 ggpht.com                   ip,203.208.46.170
 appspot.com                 ip,203.208.46.161
-blogspot.com                dns,fuck
 blogger.com                 dns,fuck
 googleapis.com              ip,203.208.46.161
 googlecode.com              ip,203.208.46.161
@@ -15,6 +14,7 @@ facebook.com                dns,fuck
 fbcdn.net                   dns,fuck
 dropbox.com                 dns,fuck
 wikipedia.com               dns,fuck
+wikipedia.org               dns,fuck
 www.youtube.com             ip,203.208.45.206
 ytimg.com                   ip,203.208.45.206
 youtube.com                 dns,fuck
@@ -26,3 +26,8 @@ igfw.net                    dns,fuck
 feedburner.com              dns,fuck
 twitter.com                 ip,61.30.127.2,fuck
 twimg.com                   dns,fuck 
+t.co                        ip,61.30.127.2,fuck
+dailymotion.com             dns,fuck
+nicovideo.jp                ip,122.56.15.70,fuck
+blogspot.com                ip,95.172.68.150,fuck
+
