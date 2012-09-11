@@ -44,8 +44,13 @@ DnsQuery::DnsQuery() {
 }
 
 DnsQuery::~DnsQuery() {
-    if(socketHandle != -1)
-        closesocket(socketHandle);
+  if(this->socketHandle != -1){
+    ::shutdown(this->socketHandle, SHUT_RDWR);
+#ifdef __WIN32__
+    closesocket(this->socketHandle);
+    this->socketHandle = -1;
+#endif
+  }
 }
 
 void    DnsQuery::setNameServer(string ns) {
