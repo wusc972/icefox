@@ -14,8 +14,7 @@ HttpSocket::HttpSocket()
 
 HttpSocket::~HttpSocket()
 {
-	if(this->socketHandle != -1)
-		closesocket(this->socketHandle);
+  this->shutdown();
 }
 
 HttpSocket* HttpSocket::accept()
