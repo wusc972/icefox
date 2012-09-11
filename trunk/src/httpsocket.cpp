@@ -20,12 +20,12 @@ HttpSocket::~HttpSocket()
 HttpSocket* HttpSocket::accept()
 {
 	sockaddr_in addr;
-	int length = sizeof(sockaddr_in);
+	socklen_t length = sizeof(sockaddr_in);
 #ifdef __WIN32
 	int ret = ::accept(this->socketHandle, (sockaddr*)&addr, &length);
 #else
 	int ret = ::accept(this->socketHandle, (sockaddr*)&addr, 
-		(unsigned int*)&length);
+		&length);
 #endif
 	if(ret < 0)
 		return NULL;

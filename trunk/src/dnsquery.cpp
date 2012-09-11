@@ -49,6 +49,9 @@ DnsQuery::~DnsQuery() {
 #ifdef __WIN32__
     closesocket(this->socketHandle);
     this->socketHandle = -1;
+#else
+    close(this->socketHandle);
+    this->socketHandle = -1;
 #endif
   }
 }
