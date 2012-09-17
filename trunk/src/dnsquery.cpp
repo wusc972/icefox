@@ -93,10 +93,10 @@ bool    DnsQuery::queryA(string name) {
     memcpy(buffer+2, queryHeader, sizeof(queryHeader));
     bufferPos = 2+sizeof(queryHeader);
     /* put domain name */
-    for(int next, current = 0; current<name.length(); ) {
+    for(size_t next, current = 0; current<name.length(); ) {
         /* divide by dot */
         next = name.find('.', current);
-        if(next == -1)
+        if(next == string::npos)
             next = name.length();
         /* length of part */
         int length = next - current;

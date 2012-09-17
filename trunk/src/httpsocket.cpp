@@ -1,6 +1,7 @@
 #include "httpsocket.h"
 #include <cstring>
 #include <iostream>
+#include <unistd.h>
 using namespace std;
 
 #ifndef MSG_NOSIGNAL
@@ -128,11 +129,13 @@ bool HttpSocket::send(const string& __buffer)
 void HttpSocket::shutdown()
 {
 	if(this->socketHandle != -1){
-                ::shutdown(this->socketHandle, SHUT_RDWR);
+//                ::shutdown(this->socketHandle, SHUT_RDWR);
 #ifdef __WIN32__
 		closesocket(this->socketHandle);
-                this->socketHandle = -1;
+#else
+        close(this->socketHandle);
 #endif
+        this->socketHandle = -1;
 	}
 }
 
