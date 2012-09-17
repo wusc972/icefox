@@ -18,8 +18,8 @@ bool HttpRequest::parseRequest(HttpSocket* __sock)
 		if(!__sock->receive(line))
 			return false;
 	
-	char cmd[10]="", path[1024+4]="", version[10]="";
-	sscanf(line.c_str(), "%9s %1024s %9s", cmd, path, version);
+	char cmd[10]="", path[4096+4]="", version[10]="";
+	sscanf(line.c_str(), "%9s %4096s %9s", cmd, path, version);
 
 	this->command = cmd;
 	this->version = version;
@@ -119,8 +119,6 @@ bool HttpRequest::sendRequest(HttpSocket* __sock)
 		int length = atoi(this->message.getHeader("content-length").c_str());
 		const int bufferSize = 8192;
 		char* buffer = new char[bufferSize];
-		if(buffer == NULL)
-			return false;
 		while(length > 0){
 			int sendSize = length < bufferSize ? length : bufferSize;
 			if((sendSize = this->clientSocket->receive(buffer, sendSize)) <= 0)
@@ -129,7 +127,8 @@ bool HttpRequest::sendRequest(HttpSocket* __sock)
 				break;
 			length -= sendSize;
 		}
-		delete buffer;
+        /* bugfix: delete -> delete[] 120917*/
+		delete[] buffer;
 	}
 	return true;
 }
