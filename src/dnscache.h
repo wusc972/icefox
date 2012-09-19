@@ -13,15 +13,16 @@ private:
     DnsCache();
     map<string, string> records;
     pthread_mutex_t lock;
-    int     udpSocket;
 
     string doQueryA(const string& host);
+    string  nameServer;
 
 public:
     static DnsCache* instance();
 
     string queryA(const string& host);
     void releaseItem(const string& ip);
+    void setNameServer(string host);
 
 };
 

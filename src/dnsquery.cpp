@@ -145,6 +145,64 @@ bool    DnsQuery::queryA(string name) {
     return true;
 }
 
+bool    DnsQuery::queryTXT(string name) {
+    printf("queryTXT: %s\n", name.c_str());
+    errorCode = 0;
+    /* Initialize a standard query header */
+    static const char queryHeader[] = {0x00,0x01,0x01,0x00,0x00,0x01,
+        0x00,0x00,0x00,0x00,0x00,0x00
+    };
+    memcpy(buffer+2, queryHeader, sizeof(queryHeader));
+    bufferPos = 2+sizeof(queryHeader);
+    /* put domain name */
+    for(size_t next, current = 0; current<name.length(); ) {
+        /* divide by dot */
+        next = name.find('.', current);
+        if(next == string::npos)
+            next = name.length();
+        /* length of part */
+        int length = next - current;
+        buffer[bufferPos ++] = length;
+        memcpy(buffer + bufferPos, name.c_str() + current, length);
+        bufferPos += length;
+        current = next + 1;
+    }
+    buffer[bufferPos ++] = '\0';
+    /* query type and class */
+    *((unsigned int*)&buffer[bufferPos]) = 0x01001000;
+    bufferPos += sizeof(unsigned int);
+    *((unsigned short*)&buffer[0]) = htons(bufferPos - 2);
+    /* send & wait for reply */
+    send(this->socketHandle, buffer, bufferPos, 0);
+
+    int ret = recv(this->socketHandle, buffer, 1000, 0);
+    if(ret < bufferPos) {
+        errorCode = 2;
+        return false;
+    }
+    if((errorCode = buffer[2+3] & 0xf) != 0)
+        return false;
+    /* Parse TXT record data */
+    int aCount = ntohs(*((unsigned short*)&buffer[2+6]));
+    for(int i=0; i<aCount; i++) {
+        string domain = parseName(bufferPos);
+        int type = ntohs(*((unsigned short*)&buffer[bufferPos]));
+        /* pass class & ttl */
+        bufferPos += 8;
+        int rdLength = ntohs(*((unsigned short*)&buffer[bufferPos]));
+        bufferPos += 2;
+        if(type == 0x10) {
+            unsigned char strLength = (unsigned char)buffer[bufferPos];
+            bufferPos += 1;
+            txtRecord = string(&buffer[bufferPos], strLength);
+            printf("found TXT record: %s\n", txtRecord.c_str());
+        } else {
+            bufferPos += rdLength;
+        }
+    }
+    return true;
+}
+
 
 const string DnsQuery::getARecord()
 {
@@ -152,3 +210,10 @@ const string DnsQuery::getARecord()
         return aRecords[rand() % aRecords.size()].address;
     return "";
 }
+
+const string DnsQuery::getTXTRecord()
+{
+    return txtRecord;
+}
+
+

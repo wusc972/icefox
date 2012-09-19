@@ -20,6 +20,7 @@ private:
     int     bufferPos;
     int     errorCode;
     vector<DnsARecord> aRecords;
+    string  txtRecord;
 
     string  parseName(int &pos);
 public:
@@ -29,7 +30,9 @@ public:
     string  getErrorString();
     bool    connect();
     bool    queryA(string name);
+    bool    queryTXT(string name);
     const string   getARecord();
+    const string   getTXTRecord();
 };
 
 #endif //_DNSQUERY_H
