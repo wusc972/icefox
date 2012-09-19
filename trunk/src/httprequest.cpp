@@ -5,6 +5,7 @@
 
 HttpRequest::HttpRequest()
 {
+    this->keepProxy = false;
 }
 
 HttpRequest::~HttpRequest()
@@ -34,12 +35,20 @@ bool HttpRequest::parseRequest(HttpSocket* __sock)
 		this->willClose = false;
 		this->message.setHeader("Connection", "keep-alive");
         }
-        // temporarily do this
-        this->message.setHeader("Connection", "close");
+
+    // temporarily do this
+    // we are not able to process multi requests per connection now!
+    // fix me!!!
+    this->message.setHeader("Connection", "close");
 	this->message.removeHeader("proxy-connection");
-	
+
 	this->clientSocket = __sock;
 	return true;
+}
+
+void HttpRequest::setKeepProxy(bool __keep)
+{
+    this->keepProxy = __keep;
 }
 
 const string& HttpRequest::getCommand()
@@ -69,30 +78,31 @@ const string& HttpRequest::getVersion()
 
 void HttpRequest::parsePath(const string __path)
 {
-        if(strncmp(__path.c_str(), "http://", 7) == 0 || strncmp(__path.c_str(), "HTTP://", 7) == 0){
-                const size_t hostEnd = __path.find('/', 8);
-		if(hostEnd == string::npos)
-			return;
-		this->host = __path.substr(7, hostEnd - 7);
-		this->path = __path.substr(hostEnd, __path.length() - hostEnd);
-		
-		parseHost(this->host);
-	}else{
-		if(this->command == "CONNECT"){
-			parseHost(__path);
-			this->path = "";
-		}else{
-			this->path = __path;
-			this->host = this->message.getHeader("Host");
-			parseHost(this->host);
-		}
-	}
+    this->uri = __path;
+    if(strncmp(__path.c_str(), "http://", 7) == 0 || strncmp(__path.c_str(), "HTTP://", 7) == 0){
+        const size_t hostEnd = __path.find('/', 8);
+        if(hostEnd == string::npos)
+            return;
+        this->host = __path.substr(7, hostEnd - 7);
+        this->path = __path.substr(hostEnd, __path.length() - hostEnd);
+
+        parseHost(this->host);
+    }else{
+        if(this->command == "CONNECT"){
+            parseHost(__path);
+            this->path = "";
+        }else{
+            this->path = __path;
+            this->host = this->message.getHeader("Host");
+            parseHost(this->host);
+        }
+    }
 }
 
 void HttpRequest::parseHost(const string __host)
 {
 	/* Case localhost:8000 */
-        size_t hostEnd = __host.find(':');
+    size_t hostEnd = __host.find(':');
 	
 	/* this->message.setHeader("Host", this->host); */
 	
@@ -109,7 +119,13 @@ void HttpRequest::parseHost(const string __host)
 
 bool HttpRequest::sendRequest(HttpSocket* __sock)
 {
-        string buf = this->command + " " + this->path + " " + this->version + "\r\n";
+    if(this->keepProxy){
+        this->path = this->uri;
+        this->message.setHeader("Proxy-Connection", "close");
+	}
+
+
+    string buf = this->command + " " + this->path + " " + this->version + "\r\n";
 	buf += this->message.getHeaders();
 	if( !__sock->send(buf))
 		return false;

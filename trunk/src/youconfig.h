@@ -11,6 +11,7 @@ struct YouRule{
     char ip[50];
     char fuck;
     char dns;
+    char proxy;
 };
 
 class YouConfig
@@ -25,7 +26,7 @@ private:
 public:
     static YouConfig* instance();
 
-    string getAddressByHost(const string& host, int* fuck);
+    string getAddressByHost(const string& host, int* fuck, int *proxy);
     void loadFromNetwork();
     void loadDefaults();
     void parseConfig(string content);

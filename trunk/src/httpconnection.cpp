@@ -241,10 +241,12 @@ HttpResponse* HttpConnection::getResponse()
 
 string HttpConnection::parseConnectHost(const string &host)
 {
-    int fuck = 0;
-    string ip = YouConfig::instance()->getAddressByHost(host, &fuck);
+    int fuck = 0, proxy = 0;
+    string ip = YouConfig::instance()->getAddressByHost(host, &fuck, &proxy);
     if(fuck)
         this->addNewLine = true;
+    if(proxy)
+        this->request->setKeepProxy(true);
     return ip;
 }
 

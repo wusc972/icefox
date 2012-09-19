@@ -2,6 +2,7 @@
 #include "dnscache.h"
 #include "httpsocket.h"
 #include "cppthread.h"
+#include "dnsquery.h"
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -12,19 +13,56 @@ using namespace std;
 
 static YouConfig* config = 0;
 
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while(std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
 class DownloadConfig: public CppThread{
+private:
+    string yhostsServer;
 public:
     void process(){
-        cout << "Downloading config file from web...\n";
-        HttpSocket * http = new HttpSocket();
-        if(!http->connect("icefox.googlecode.com", 80)){
-            cerr << "Failed to connect to icefox.googlecode.com" << endl;
+        yhostsServer = "icefox.googlecode.com";
+
+        cout << "Checking dns records...\n";
+        DnsQuery q;
+        q.setNameServer(string("8.8.") + string("4.4"));
+        if(!q.connect()){
+            cerr << "Failed to connect to dns server.\n";
             return;
         }
 
-        http->send("GET /svn/trunk/yhosts HTTP/1.0\r\n"
-                   "Host: icefox.googlecode.com\r\n"
-                   "Connection: close\r\n");
+        q.queryTXT(string("conf.you") + string("proxy.us"));
+        string conf = q.getTXTRecord();
+        vector<string> confList;
+        split(conf, ' ', confList);
+        for(size_t i=0; i<confList.size(); i++){
+            if(confList[i] == "dns"){
+                ++i;
+                DnsCache::instance()->setNameServer(confList[i]);
+                cout << "set dns " << confList[i] << endl;
+            }else if(confList[i] == "yhosts"){
+                ++i;
+                yhostsServer = confList[i];
+                cout << "set yhosts server " << yhostsServer << endl; 
+            }
+        }
+
+        cout << "Downloading config file from web...\n";
+        HttpSocket * http = new HttpSocket();
+        if(!http->connect(yhostsServer, 80)){
+            cerr << "Failed to connect to " << yhostsServer << endl;
+            return;
+        }
+
+        http->send(string("GET /svn/trunk/yhosts HTTP/1.0\r\nHost: ") + yhostsServer 
+                    + string("\r\nConnection: close\r\n")
+                   );
         string line;
         while(http->receive(line)){
             if(line.empty())
@@ -85,15 +123,6 @@ void YouConfig::loadDefaults()
     parseConfig(defaults);
 }
 
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while(std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-
 void YouConfig::parseConfig(string content)
 {
     cout << "Loading config ...\n";
@@ -125,6 +154,8 @@ void YouConfig::parseConfig(string content)
             }else if(strcmp("ip", p) == 0){
                 p = strtok(NULL, " ,");
                 strcpy(r.ip, p);
+            }else if(strcmp("proxy", p) == 0){
+                r.proxy = 1;
             }
         }
         ruleList.push_back(r);
@@ -142,7 +173,7 @@ YouConfig* YouConfig::instance()
     return config;
 }
 
-string YouConfig::getAddressByHost(const string &host, int * fuck)
+string YouConfig::getAddressByHost(const string &host, int * fuck, int * proxy)
 {
     this->lockConfig();
 
@@ -153,6 +184,7 @@ string YouConfig::getAddressByHost(const string &host, int * fuck)
         YouRule& r = *i;
         if(host.find(r.suffix) != string::npos){
             *fuck = r.fuck;
+            *proxy = r.proxy;
             if(r.ip[0]){
                 targetIP = r.ip;
             }
