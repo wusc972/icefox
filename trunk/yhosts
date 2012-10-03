@@ -3,9 +3,9 @@ google.com                  ip,203.208.46.161
 googleusercontent.com       ip,203.208.46.170
 gstatic.com                 ip,203.208.46.175
 ggpht.com                   ip,203.208.46.170
-appspot.com                 ip,203.208.46.161
+appspot.com                 dns,fuck
 blogger.com                 dns,fuck
-googleapis.com              ip,203.208.46.161
+googleapis.com              dns,fuck
 googlecode.com              ip,203.208.46.161
 google.com.hk               ip,203.208.46.161
 gmail.com                   ip,203.208.46.161
