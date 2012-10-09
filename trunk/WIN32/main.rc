@@ -19,6 +19,10 @@ IDR_MENU1 MENU
     {
 	MENUITEM "启用 YouProxy", IDM_1
 	MENUITEM SEPARATOR
+        MENUITEM "项目主页...", IDM_3
+        MENUITEM "最新下载...", IDM_4
+        MENUITEM "提交Bug或者建议...", IDM_5
+	MENUITEM SEPARATOR
         MENUITEM "退出", IDM_2
     }
 }

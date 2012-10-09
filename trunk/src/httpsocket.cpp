@@ -2,11 +2,15 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
+
+
 using namespace std;
 
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL 0
 #endif
+
+typedef int socklen_t;
 
 HttpSocket::HttpSocket()
 {
