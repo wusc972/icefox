@@ -32,44 +32,43 @@ static HINSTANCE hinstance;
 static HMENU menu;
 static SystemUtil ieSetter;
 static bool bAgentOn = false;
-
+const UINT WM_TASKBARCREATED = ::RegisterWindowMessage( "TaskbarCreated");
 const static wchar_t statement[]=
-L"YouProxy For Windows (Build 2)\n\
-=============================\n\
+L"YouProxy For Windows (Build 3)\n\
+========================\n\
 \n\
 * YouProxy 是一款免费软件，欢迎所有人提供BUG信息及建议。\n\
 * 请访问 http://code.google.com/p/icefox/ 获取最新信息 。\n\
-* 版本信息：20120908 (i386-mingw)\n \
+* 版本信息：20121009 (MinGW32)\n \
       \n\
       \n\
 * 使用方法：右键托盘菜单中，选择启用 YouProxy 。\n \
 ";
 
-int PASCAL WinMain( HINSTANCE hInstance, //当前实例句柄
-		HINSTANCE hPrevInstance, //前一个实例句柄
-		LPSTR lpCmdLine, //命令行字符
-		int nCmdShow) //窗口显示方式
+int PASCAL WinMain( HINSTANCE hInstance, 
+		HINSTANCE hPrevInstance, 
+		LPSTR lpCmdLine,
+		int nCmdShow)
 {
 	MSG msg;
-	//创建主窗口
+
 	if ( !InitWindow( hInstance, nCmdShow ) )
 		return FALSE;
-	//进入消息循环
+
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	//程序结束
-ieSetter.disableSystemProxy();
-setIcon(true,true);
+
+        ieSetter.disableSystemProxy();
+        setIcon(true,true);
 	return msg.wParam;
 }
 
 static BOOL InitWindow( HINSTANCE hInstance, int nCmdShow )
 {
-	WNDCLASS wc; //窗口类结构
-	//填充窗口类结构
+	WNDCLASS wc; 
 	wc.style = CS_VREDRAW | CS_HREDRAW;
 	wc.lpfnWndProc = (WNDPROC)WinProc;
 	wc.cbClsExtra = 0;
@@ -80,38 +79,38 @@ static BOOL InitWindow( HINSTANCE hInstance, int nCmdShow )
 	wc.hbrBackground =(HBRUSH) CreateSolidBrush(RGB(240,240,240));
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = "youagent";
-	//注册窗口类
+
 	RegisterClass( &wc );
-	//创建主窗口
+
         long screenw,screenh;
         screenw=GetSystemMetrics(SM_CXSCREEN);
         screenh=GetSystemMetrics(SM_CYSCREEN);
         long ww= 599 ,hh= 280 ;
 	wnd = CreateWindowW(
-			L"youagent", //窗口类名称
-			L" YouProxy ", //窗口标题
-			WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX, //窗口风格，定义为普通型
-			(screenw-ww)/2, //窗口位置的x坐标
-			(screenh-hh)/2, //窗口位置的y坐标
-			ww, //窗口的宽度
-			hh, //窗口的高度
-			NULL, //父窗口句柄
-			NULL, //菜单句柄
-			hInstance, //应用程序实例句柄
-			NULL ); //窗口创建数据指针
+			L"youagent", 
+			L" YouProxy ", //title
+			WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX, 
+			(screenw-ww)/2,
+			(screenh-hh)/2,
+			ww,
+			hh,
+			NULL,
+			NULL,
+			hInstance,
+			NULL );
 	if( !wnd ) return FALSE;
 	//
 	SendMessage(wnd, WM_SETICON, TRUE, (LPARAM) 
-    LoadIcon((HINSTANCE) GetWindowLong(wnd, GWL_HINSTANCE),MAKEINTRESOURCE(MAINAPP)));
+                    LoadIcon((HINSTANCE) GetWindowLong(wnd, GWL_HINSTANCE),MAKEINTRESOURCE(MAINAPP)));
 	hinstance=hInstance;
-	//显示并更新窗口
+
 	ShowWindow( wnd, SW_SHOW);
 	
 	setIcon(true);
 	setTips("YouProxy is DISabled!");
 	return TRUE;
 }
-///消息循环
+///
 BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
   switch( message )
@@ -123,22 +122,14 @@ BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 	createCtrls(hWnd,wParam);
 	//init ie settings
 	ieSetter.disableSystemProxy();
-	//开启服务
-#ifndef __WIN32__
-	signal(SIGPIPE, SIG_IGN);
-#else
+	//
 	static WSADATA wsa_data;
 	if(WSAStartup((WORD)(1<<8|1), &wsa_data) != 0)
 	  exit(1);
-#endif
-	      
 	///
 	YouConfig::instance()->loadFromNetwork();
 	HttpServer* server = new HttpServer();
-	//cout << "Start proxy server at localhost:1998\n"<<endl;
 	server->startThread();
-
-
 	break;
       }
     case  WM_COMMAND:
@@ -156,14 +147,14 @@ BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 		  bAgentOn = true;
 		  //tray icon
 		  setIcon(false);
-setTips("YouProxy is ENabled!");
+                  setTips("YouProxy is ENabled!");
 		}
 	      else {
 		CheckMenuItem( menu, IDM_1, MF_BYCOMMAND | MF_UNCHECKED); 
 		ieSetter.disableSystemProxy();
 		bAgentOn = false;
 		setIcon(true);
-setTips("YouProxy is DISabled!");
+                setTips("YouProxy is DISabled!");
 	      }
 	      break;
 	    }
@@ -172,6 +163,39 @@ setTips("YouProxy is DISabled!");
 	      DestroyWindow(wnd);
 	      break;
 	    }
+          case IDM_3://website
+            {
+              SHELLEXECUTEINFO sei;
+              ::ZeroMemory(&sei,sizeof(SHELLEXECUTEINFO));
+              sei.cbSize = sizeof( SHELLEXECUTEINFO );	
+              sei.lpVerb = TEXT( "open" );
+              sei.lpFile = "https://code.google.com/p/icefox";
+              sei.nShow = SW_SHOWNORMAL;		
+              ShellExecuteEx(&sei);
+              break;
+            }
+          case IDM_4://website
+            {
+              SHELLEXECUTEINFO sei;
+              ::ZeroMemory(&sei,sizeof(SHELLEXECUTEINFO));
+              sei.cbSize = sizeof( SHELLEXECUTEINFO );	
+              sei.lpVerb = TEXT( "open" );
+              sei.lpFile = "https://code.google.com/p/icefox/downloads/list";
+              sei.nShow = SW_SHOWNORMAL;
+              ShellExecuteEx(&sei);
+              break;
+            }
+          case IDM_5://website
+            {
+              SHELLEXECUTEINFO sei;
+              ::ZeroMemory(&sei,sizeof(SHELLEXECUTEINFO));
+              sei.cbSize = sizeof( SHELLEXECUTEINFO );	
+              sei.lpVerb = TEXT( "open" );
+              sei.lpFile = "https://code.google.com/p/icefox/issues/list";
+              sei.nShow = SW_SHOWNORMAL;
+              ShellExecuteEx(&sei);
+              break;
+            }
 	  case IDBT:
 	    {
 	      ShowWindow(wnd,SW_HIDE);
@@ -187,21 +211,30 @@ setTips("YouProxy is DISabled!");
 	break;
       }
 		
-    case WM_DESTROY://退出消息
+    case WM_DESTROY:
       {
 				
-	PostQuitMessage( 0 );//调用退出函数
+	PostQuitMessage( 0 );
 	break;
       }
-      /*
+    case WM_QUERYENDSESSION:
+      {
+        ieSetter.disableSystemProxy();
+        //MessageBox(0,"hello",0,0);
+        return 1;
+      }
+    case WM_ENDSESSION:
+      {
+        break;
+      }
+
     default:
       if (message == WM_TASKBARCREATED)
 	{
 	  firstTimeToAdd = true;
 	  setIcon(!bAgentOn);
-	  }*/
+        }
     }
-  //调用缺省消息处理过程
   return DefWindowProc(hWnd, message, wParam, lParam);
 } 
 
@@ -255,62 +288,44 @@ void onTray(WPARAM wParam,LPARAM lParam)
 }
 
 
+static NOTIFYICONDATA tnid;
 
 void setIcon(bool disabled , bool deL )
 {
-	// set NOTIFYCONDATA structure	
-	NOTIFYICONDATA tnid;
+  tnid.cbSize = sizeof(NOTIFYICONDATA); 
+  tnid.hWnd = wnd; 
+  tnid.uID = 0x1; //Resourcename
+  tnid.uCallbackMessage = TRAY_NOTIFY;
 
-	tnid.cbSize = sizeof(NOTIFYICONDATA); 
-	tnid.hWnd = wnd; 
-	tnid.uID = 0x1; //Resourcename
-	tnid.uFlags = NIF_MESSAGE |NIF_ICON | NIF_TIP; //
-	tnid.uCallbackMessage = TRAY_NOTIFY;//user message 
-	
-	HICON iconnew;
-	if(!disabled)
-	  iconnew = LoadIcon(hinstance, MAKEINTRESOURCE(MAINAPP));
-	else
-	  iconnew = LoadIcon(hinstance, MAKEINTRESOURCE(AGENTOFF));
-	tnid.hIcon = iconnew; //handle of the created icon
-
-	//copy the string to the NOTIFYCONDATA structure
-	lstrcpyn(tnid.szTip, "YouProxy for Windows", sizeof(tnid.szTip));
-
-	if (deL)
-	{
-		Shell_NotifyIcon(NIM_DELETE,&tnid);
-		return;
-	}
-
-	
-	if (firstTimeToAdd){
-	// add the icon to the tray
-	  Shell_NotifyIcon(NIM_ADD, &tnid); 
-	  firstTimeToAdd = false;
-	}
-	else{
-	  Shell_NotifyIcon(NIM_MODIFY, &tnid);
-	}
-	  
-	// free icon 
-	DestroyIcon(iconnew); 
+  tnid.uFlags = NIF_MESSAGE |NIF_ICON | NIF_TIP; //
+  HICON iconnew= LoadIcon(hinstance, MAKEINTRESOURCE(disabled ? AGENTOFF : MAINAPP));
+  tnid.hIcon = iconnew;
+  lstrcpyn(tnid.szTip, "YouProxy for Windows", sizeof(tnid.szTip));
+  if (deL)
+    {
+      Shell_NotifyIcon(NIM_DELETE,&tnid);
+      return;
+    }
+  if (firstTimeToAdd){
+    Shell_NotifyIcon(NIM_ADD, &tnid); 
+    firstTimeToAdd = false;
+  }
+  else{
+    Shell_NotifyIcon(NIM_MODIFY, &tnid);
+  }
+  //avoid mem leak
+  DestroyIcon(iconnew); 
 }
 
 void setTips(const char* tips)
 {
-// set NOTIFYCONDATA structure	
-	NOTIFYICONDATA m_tnd;
-
-	m_tnd.cbSize=sizeof(NOTIFYICONDATA);
-	m_tnd.uFlags = NIF_INFO;
-	m_tnd.uVersion = NOTIFYICON_VERSION;
-	m_tnd.uTimeout = 1000;
-	m_tnd.dwInfoFlags = NIIF_INFO;
-	wsprintf( m_tnd.szInfoTitle, "%s"," YouProxy " );
-	wsprintf( m_tnd.szInfo,"%s",      tips     );
-	//wcscpy_s( m_tnd.szTip,       _T("tip")       );
-	//SetTimer(1, 1000, NULL);
-	Shell_NotifyIcon( NIM_MODIFY, &m_tnd );
+  tnid.uFlags = NIF_INFO;
+  tnid.uVersion = NOTIFYICON_VERSION;
+  tnid.uTimeout = 1000;
+  tnid.dwInfoFlags = NIIF_INFO;
+  wsprintf( tnid.szInfoTitle, "%s"," YouProxy " );
+  wsprintf( tnid.szInfo,"%s",      tips     );
+  //wcscpy_s( tnid.szTip,       _T("tip")       );
+  Shell_NotifyIcon( NIM_MODIFY, &tnid );
 }
 
