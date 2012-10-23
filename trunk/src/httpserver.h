@@ -18,6 +18,7 @@ public:
 
 	void	process();
 	void	checkConnections();
+    void    close();
 };
 
 #endif // HTTPSERVER_H
