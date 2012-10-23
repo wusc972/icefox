@@ -10,6 +10,12 @@ HttpServer::~HttpServer()
 {
 }
 
+void HttpServer::close()
+{
+    this->listenSocket.shutdown();
+    this->closed = true;
+}
+
 void HttpServer::process()
 {
         if(!this->listenSocket.bind(1998)){
@@ -32,6 +38,7 @@ void HttpServer::process()
 	
 	
 	checkConnections();
+    cout << "httpserver ends." << endl;
 }
 
 void HttpServer::checkConnections()
