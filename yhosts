@@ -9,14 +9,14 @@ googleapis.com              dns,fuck
 googlecode.com              ip,203.208.45.206
 google.com.hk               ip,203.208.45.206
 gmail.com                   ip,203.208.45.206
-www.facebook.com            ip,69.171.224.32,fuck
+www.facebook.com            ip,66.220.158.16,fuck
 facebook.com                dns,fuck
 fbcdn.net                   dns,fuck
 dropbox.com                 dns,fuck
 wikipedia.com               dns,fuck
 wikipedia.org               dns,fuck
-www.youtube.com             dns,fuck
-ytimg.com                   dns,fuck
+www.youtube.com             ip,203.208.45.206
+ytimg.com                   ip,203.208.45.206
 youtube.com                 dns,fuck
 youtu.be                    dns,fuck
 vimeo.com                   dns,fuck
