@@ -10,7 +10,9 @@ using namespace std;
 #define MSG_NOSIGNAL 0
 #endif
 
+#ifdef __WIN32
 typedef int socklen_t;
+#endif
 
 HttpSocket::HttpSocket()
 {
