@@ -15,8 +15,8 @@ fbcdn.net                   dns,fuck
 dropbox.com                 dns,fuck
 wikipedia.com               dns,fuck
 wikipedia.org               dns,fuck
-www.youtube.com             ip,203.208.45.206
-ytimg.com                   ip,203.208.45.206
+www.youtube.com             ip,203.208.45.206,fuck
+ytimg.com                   ip,203.208.45.206,fuck
 youtube.com                 dns,fuck
 youtu.be                    dns,fuck
 vimeo.com                   dns,fuck
