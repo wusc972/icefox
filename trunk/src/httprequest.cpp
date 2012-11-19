@@ -19,8 +19,8 @@ bool HttpRequest::parseRequest(HttpSocket* __sock)
 		if(!__sock->receive(line))
 			return false;
 	
-	char cmd[10]="", path[4096+4]="", version[10]="";
-	sscanf(line.c_str(), "%9s %4096s %9s", cmd, path, version);
+	char cmd[10]="", path[9096+4]="", version[10]="";
+	sscanf(line.c_str(), "%9s %9096s %9s", cmd, path, version);
 
 	this->command = cmd;
 	this->version = version;

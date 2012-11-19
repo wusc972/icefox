@@ -3,7 +3,7 @@
 #include "dnscache.h"
 #include "dnsquery.h"
 
-static const char* DEFAULT_DNS_SERVER = "8.8.4.4";
+static const char* DEFAULT_DNS_SERVER = "202.181.202.140";
 static DnsCache* dns = 0;
 
 DnsCache::DnsCache()
