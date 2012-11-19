@@ -20,6 +20,7 @@ private:
     YouConfig();
     vector<YouRule> ruleList;
     pthread_mutex_t lock;
+    int fuckingVersion;
 
     void lockConfig();
     void unlockConfig();
@@ -29,6 +30,7 @@ public:
     string getAddressByHost(const string& host, int* fuck, int *proxy);
     void loadFromNetwork();
     void loadDefaults();
+    void setFuckingVersion(int ver);
     void parseConfig(string content);
 
 };

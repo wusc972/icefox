@@ -25,9 +25,12 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
 class DownloadConfig: public CppThread{
 private:
     string yhostsServer;
+    string yhostsServerIP;
+    string yhostsPath;
 public:
     void process(){
         yhostsServer = "icefox.googlecode.com";
+        yhostsPath = "/svn/trunk/yhosts";
 
         cout << "Checking dns records...\n";
         DnsQuery q;
@@ -45,22 +48,31 @@ public:
             if(confList[i] == "dns"){
                 ++i;
                 DnsCache::instance()->setNameServer(confList[i]);
-                cout << "set dns " << confList[i] << endl;
             }else if(confList[i] == "yhosts"){
                 ++i;
                 yhostsServer = confList[i];
-                cout << "set yhosts server " << yhostsServer << endl; 
+            }else if(confList[i] == "yhosts_ip"){
+                ++i;
+                yhostsServerIP = confList[i];
+            }else if(confList[i] == "yhosts_path"){
+                ++i;
+                yhostsPath = confList[i];
+            }else if(confList[i] == "fuck_ver"){
+                ++i;
+                YouConfig::instance()->setFuckingVersion(atoi(confList[i].c_str()));
             }
         }
+        if(yhostsServerIP.empty())
+            yhostsServerIP = yhostsServer;
 
         cout << "Downloading config file from web...\n";
         HttpSocket * http = new HttpSocket();
-        if(!http->connect(yhostsServer, 80)){
+        if(!http->connect(yhostsServerIP, 80)){
             cerr << "Failed to connect to " << yhostsServer << endl;
             return;
         }
 
-        http->send(string("GET /svn/trunk/yhosts HTTP/1.0\r\nHost: ") + yhostsServer 
+        http->send(string("GET ") + yhostsPath + string(" HTTP/1.0\r\nHost: ") + yhostsServer 
                     + string("\r\nConnection: close\r\n")
                    );
         string line;
@@ -87,6 +99,7 @@ public:
 YouConfig::YouConfig()
 {
     pthread_mutex_init(&this->lock, NULL);
+    setFuckingVersion(1);
     loadDefaults();
 }
 
@@ -96,35 +109,45 @@ void YouConfig::loadFromNetwork()
     config->startThread();
 }
 
+void YouConfig::setFuckingVersion(int ver)
+{
+    fuckingVersion = ver;
+    cout << "Set fucking verision " << ver << endl;
+}
+
 void YouConfig::loadDefaults()
 {
     const static char* defaults =
-            "plus.google.com             ip,203.208.45.206\n"
-            "google.com                  ip,203.208.45.206\n"
-            "googleusercontent.com       ip,203.208.45.206\n"
-            "gstatic.com                 ip,203.208.45.206\n"
-            "ggpht.com                   ip,203.208.45.206\n"
-            "appspot.com                 dns,fuck\n"
-            "blogspot.com                ip,61.30.127.2,fuck,proxy\n"
-            "blogspot.tw                 ip,61.30.127.2,fuck,proxy\n"
-            "blogger.com                 dns,fuck\n"
-            "googleapis.com              dns,fuck\n"
-            "googlecode.com              ip,203.208.45.206\n"
-            "google.com.hk               ip,203.208.45.206\n"
-            "www.facebook.com            ip,61.30.127.2,fuck,proxy\n"
-            ".facebook.com                dns,fuck\n"
-            "fbcdn.net                   dns,fuck\n"
-            "dropbox.com                 dns,fuck\n"
-            "wikipedia.com               dns,fuck\n"
-            "www.youtube.com             dns,fuck\n"
-            "ytimg.com                   dns,fuck\n"
-            ".youtube.com                 dns,fuck\n"
-            "vimeo.com                   dns,fuck\n"
-            "vimeocdn.com                dns,fuck\n"
-            "twitter.com                 ip,61.30.127.2,fuck,proxy\n"
-            "twimg.com                   ip,61.30.127.2,fuck,proxy\n"
-            "t.co                        ip,61.30.127.2,fuck,proxy\n"
-            ".wenxuecity.com              ip,61.30.127.2,fuck,proxy\n";
+        "www.youtube.com             dns,fuck\n"
+        "ytimg.com                   dns,fuck\n"
+        ".youtube                    dns,fuck\n"
+        ".google                     dns,fuck\n"
+        "google.com                  ip,203.208.45.206\n"
+        "www.youtube.com             ip,208.117.255.74,fuck\n"//203.208.47.20\n"
+        "ytimg.com                   ip,208.117.255.74,fuck\n"//203.208.47.20\n"
+        ".youtube.com                ip,208.117.255.74,fuck\n"//dns,fuck,proxy\n"
+        "plus.google.com             ip,203.208.45.206\n"
+        "doubleclick                 dns,fuck\n"
+        "googleusercontent.com       ip,203.208.45.206\n"
+        "gstatic.com                 ip,203.208.45.206\n"
+        "ggpht.com                   ip,203.208.45.206\n"
+        "appspot.com                 dns,fuck\n"
+        "blogspot.com                ip,61.30.127.2,fuck,proxy\n"
+        "blogspot.tw                 ip,61.30.127.2,fuck,proxy\n"
+        "blogger.com                 dns,fuck\n"
+        "googleapis.com              dns,fuck\n"
+        "googlecode.com              ip,203.208.45.206\n"
+        "google.com.hk               ip,203.208.45.206\n"
+        "www.facebook.com            ip,66.220.158.16,fuck,proxy\n"
+        ".facebook.com               dns,fuck\n"
+        "fbcdn.net                   dns,fuck\n"
+        "dropbox.com                 dns,fuck\n"
+        "wikipedia.com               dns,fuck\n"
+        "vimeo.com                   dns,fuck\n"
+        "vimeocdn.com                dns,fuck\n"
+        "twitter.com                 ip,61.30.127.2,fuck,proxy\n"
+        "twimg.com                   ip,61.30.127.2,fuck,proxy\n"
+        "t.co                        ip,61.30.127.2,fuck,proxy\n";
     parseConfig(defaults);
 }
 
@@ -155,7 +178,7 @@ void YouConfig::parseConfig(string content)
             if(strcmp(p, "dns") == 0){
                 r.dns = 1;
             }else if(strcmp("fuck", p) == 0){
-                r.fuck = 1;
+                r.fuck = fuckingVersion;
             }else if(strcmp("ip", p) == 0){
                 p = strtok(NULL, " ,");
                 strcpy(r.ip, p);

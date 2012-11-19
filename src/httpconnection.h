@@ -15,11 +15,12 @@ private:
     HttpResponse*           response;
 
     bool                closed;
-    bool                addNewLine;
+    int                 addNewLine;
 
 
     bool                transferTrunkedData();
     bool                transferData();
+    void                doAddNewLine();
     string              parseConnectHost(const string& host);
 public:
     /* Shrimp is our friend! */

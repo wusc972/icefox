@@ -25,6 +25,47 @@ HttpConnection::HttpConnection(HttpSocket* __sock)
     this->addNewLine = false;
 }
 
+void HttpConnection::doAddNewLine()
+{
+    switch(this->addNewLine){
+        case 9:
+            this->remoteSocket->send("\r\r\r\r\n\n\n\n", 8);
+            break; 
+        case 8:
+            this->remoteSocket->send("\r\r\r\r", 4);
+            break; 
+        case 7:
+            this->remoteSocket->send("\n\n\n\n", 4);
+            break; 
+        case 6:
+            this->remoteSocket->send("\n\r\n\r", 4);
+            break; 
+        case 5:
+            this->remoteSocket->send("\n\r", 2);
+            break; 
+        case 4:
+            this->remoteSocket->send("\r\r\n\n", 4);
+            break; 
+        case 3:
+            this->remoteSocket->send("\n\n", 2);
+            break; 
+        case 2:
+            this->remoteSocket->send("\r\r", 2);
+            break; 
+        case 1:
+            this->remoteSocket->send("\r\n", 2);
+        case 0:
+            return;
+        default:{
+            for(int i=0; i<this->addNewLine; i++){
+                this->remoteSocket->send("\n", 1);
+            }
+        }
+            break;
+    }
+
+}
+
 void HttpConnection::process()
 {
     string host = "";
@@ -54,8 +95,9 @@ void HttpConnection::process()
                 DnsCache::instance()->releaseItem(this->request->getHost());
                 break;
             }
-            if(this->request->getCommand() != "CONNECT" && this->addNewLine)
-                this->remoteSocket->send(string("\r\n"));
+            if(this->request->getCommand() != "CONNECT" && this->addNewLine){
+                this->doAddNewLine();
+            }
         }
 
         /* Do CONNECT */
@@ -75,7 +117,7 @@ void HttpConnection::process()
             }
 
             if(this->request->getCommand() != "CONNECT" && this->addNewLine)
-                this->remoteSocket->send(string("\r\n"));
+                this->doAddNewLine();
             if(!this->request->sendRequest(this->remoteSocket))
                 break;
         }
@@ -244,7 +286,7 @@ string HttpConnection::parseConnectHost(const string &host)
     int fuck = 0, proxy = 0;
     string ip = YouConfig::instance()->getAddressByHost(host, &fuck, &proxy);
     if(fuck)
-        this->addNewLine = true;
+        this->addNewLine = fuck;
     if(proxy)
         this->request->setKeepProxy(true);
     return ip;
