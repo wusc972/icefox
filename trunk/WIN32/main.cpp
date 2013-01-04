@@ -10,9 +10,6 @@
 #include "CommCtrl.h"
 #include <windef.h>
 #include <gdiplus.h>
-
-#include "resource.h"
-#include "main.h"
 //
 #include "httpsocket.h"
 #include "youconfig.h"
@@ -20,26 +17,30 @@
 #include "systemutil.h"
 
 #include <signal.h>
+//std
+#include <memory>
 #include <iostream>
 #include <ctime>
 
+#include "resource.h"
+#include "main.h"
 
 
 using namespace std;
 
-static HWND wnd;
-static HINSTANCE hinstance;
-static HMENU menu;
-static SystemUtil ieSetter;
-static bool bAgentOn = false;
+HWND wnd;
+HINSTANCE hinstance;
+HMENU menu;
+SystemUtil ieSetter;
+bool bAgentOn = false;
 const UINT WM_TASKBARCREATED = ::RegisterWindowMessage( "TaskbarCreated");
 const static wchar_t statement[]=
-L"YouProxy For Windows (Build 3)\n\
+L"YouProxy For Windows\n\
 ========================\n\
 \n\
 * YouProxy 是一款免费软件，欢迎所有人提供BUG信息及建议。\n\
 * 请访问 http://code.google.com/p/icefox/ 获取最新信息 。\n\
-* 版本信息：20121009 (MinGW32)\n \
+* 版本信息：20130103\n \
       \n\
       \n\
 * 使用方法：右键托盘菜单中，选择启用 YouProxy 。\n \
@@ -102,10 +103,18 @@ static BOOL InitWindow( HINSTANCE hInstance, int nCmdShow )
 	//
 	SendMessage(wnd, WM_SETICON, TRUE, (LPARAM) 
                     LoadIcon((HINSTANCE) GetWindowLong(wnd, GWL_HINSTANCE),MAKEINTRESOURCE(MAINAPP)));
-	hinstance=hInstance;
+  createCtrls(wnd);
+  hinstance=hInstance;
+  menu=LoadMenu(hinstance, MAKEINTRESOURCE (IDR_MENU1)) ;
 
+  static WSADATA wsa_data;
+  if(WSAStartup((WORD)(1<<8|1), &wsa_data) != 0) exit(1);
+
+  YouConfig::instance()->loadFromNetwork();
+  HttpServer* server = new HttpServer();
+  server->startThread();
+  
 	ShowWindow( wnd, SW_SHOW);
-	
 	setIcon(true);
 	setTips("YouProxy is DISabled!");
 	return TRUE;
@@ -117,19 +126,7 @@ BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
     {
     case WM_CREATE:
       {
-								
-	menu=LoadMenu(hinstance, MAKEINTRESOURCE (IDR_MENU1)) ;
-	createCtrls(hWnd,wParam);
-	//init ie settings
-	ieSetter.disableSystemProxy();
-	//
-	static WSADATA wsa_data;
-	if(WSAStartup((WORD)(1<<8|1), &wsa_data) != 0)
-	  exit(1);
-	///
-	YouConfig::instance()->loadFromNetwork();
-	HttpServer* server = new HttpServer();
-	server->startThread();
+        ieSetter.disableSystemProxy();
 	break;
       }
     case  WM_COMMAND:
@@ -238,7 +235,7 @@ BOOL CALLBACK WinProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
   return DefWindowProc(hWnd, message, wParam, lParam);
 } 
 
-void createCtrls(HWND&hwnd,WPARAM wParam)
+void createCtrls(HWND&hwnd)
 {
 
 	HFONT hfont0 = CreateFont(-11, 0, 0, 0, 400, FALSE, FALSE, FALSE, 1, 400, 0, 0, 0, ("Ms Shell Dlg"));
@@ -273,10 +270,9 @@ void onTray(WPARAM wParam,LPARAM lParam)
     }
   case WM_RBUTTONDOWN:
     {
-      HMENU popmenu=GetSubMenu(menu,0);
+      HMENU popmenu= GetSubMenu(menu,0);
       POINT point;
       GetCursorPos(&point);
-      //this can makesure menu get focus right now
       SetForegroundWindow(wnd);
       TrackPopupMenu (popmenu, TPM_RIGHTBUTTON, point.x, point.y, 0, wnd, NULL) ;
       break;
@@ -288,7 +284,7 @@ void onTray(WPARAM wParam,LPARAM lParam)
 }
 
 
-static NOTIFYICONDATA tnid;
+NOTIFYICONDATA tnid;
 
 void setIcon(bool disabled , bool deL )
 {
@@ -298,8 +294,8 @@ void setIcon(bool disabled , bool deL )
   tnid.uCallbackMessage = TRAY_NOTIFY;
 
   tnid.uFlags = NIF_MESSAGE |NIF_ICON | NIF_TIP; //
-  HICON iconnew= LoadIcon(hinstance, MAKEINTRESOURCE(disabled ? AGENTOFF : MAINAPP));
-  tnid.hIcon = iconnew;
+  icon_maker im(hinstance, MAKEINTRESOURCE(disabled ? AGENTOFF : MAINAPP));
+  tnid.hIcon = im.get_icon();
   lstrcpyn(tnid.szTip, "YouProxy for Windows", sizeof(tnid.szTip));
   if (deL)
     {
@@ -313,8 +309,6 @@ void setIcon(bool disabled , bool deL )
   else{
     Shell_NotifyIcon(NIM_MODIFY, &tnid);
   }
-  //avoid mem leak
-  DestroyIcon(iconnew); 
 }
 
 void setTips(const char* tips)
