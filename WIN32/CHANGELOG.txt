@@ -1,9 +1,0 @@
-Change log of YouProxy for M$ Windows
-==========
-
-## 2012-10-9(build 3):
-    1. 修复了关机再开机无法上网
-    2. 修复了explorer崩溃重启后，托盘图标消失
-    3. 合并最新youagent更新
-
-
